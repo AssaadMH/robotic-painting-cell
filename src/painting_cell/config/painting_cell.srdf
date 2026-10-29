@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="painting_cell">
+  <group name="kr210">
+    <chain base_link="base_link" tip_link="paint_tcp"/>
+  </group>
+  <group name="rail">
+    <joint name="rail_joint"/>
+    <joint name="cross_joint"/>
+  </group>
+  <group name="kr210_rail">
+    <group name="rail"/>
+    <group name="kr210"/>
+  </group>
+
+  <!-- arm folded up and pointing at the car; safe to slide along the rail -->
+  <group_state name="ready" group="kr210">
+    <joint name="joint_a1" value="0"/>
+    <joint name="joint_a2" value="0.35"/>
+    <joint name="joint_a3" value="-1.10"/>
+    <joint name="joint_a4" value="0"/>
+    <joint name="joint_a5" value="1.00"/>
+    <joint name="joint_a6" value="0"/>
+  </group_state>
+  <group_state name="rail_centre" group="rail"><joint name="rail_joint" value="0"/><joint name="cross_joint" value="0"/></group_state>
+
+  <!-- fixed or adjacent links never collide -->
+  <disable_collisions link1="world" link2="rail_base" reason="Adjacent"/>
+  <disable_collisions link1="rail_base" link2="carriage" reason="Adjacent"/>
+  <disable_collisions link1="carriage" link2="slide" reason="Adjacent"/>
+  <disable_collisions link1="slide" link2="pedestal" reason="Adjacent"/>
+  <disable_collisions link1="pedestal" link2="base_link" reason="Adjacent"/>
+  <disable_collisions link1="carriage" link2="pedestal" reason="Never"/>
+  <disable_collisions link1="carriage" link2="base_link" reason="Never"/>
+  <disable_collisions link1="slide" link2="base_link" reason="Never"/>
+  <disable_collisions link1="rail_base" link2="slide" reason="Never"/>
+  <disable_collisions link1="rail_base" link2="pedestal" reason="Never"/>
+  <disable_collisions link1="rail_base" link2="base_link" reason="Never"/>
+  <disable_collisions link1="base_link" link2="link_1" reason="Adjacent"/>
+  <disable_collisions link1="link_1" link2="link_2" reason="Adjacent"/>
+  <disable_collisions link1="link_2" link2="link_3" reason="Adjacent"/>
+  <disable_collisions link1="link_3" link2="link_4" reason="Adjacent"/>
+  <disable_collisions link1="link_4" link2="link_5" reason="Adjacent"/>
+  <disable_collisions link1="link_5" link2="link_6" reason="Adjacent"/>
+  <disable_collisions link1="link_6" link2="gun" reason="Adjacent"/>
+  <disable_collisions link1="link_5" link2="gun" reason="Never"/>
+  <disable_collisions link1="pedestal" link2="link_1" reason="Never"/>
+  <disable_collisions link1="base_link" link2="link_2" reason="Never"/>
+  <disable_collisions link1="carriage" link2="link_1" reason="Never"/>
+  <disable_collisions link1="slide" link2="link_1" reason="Never"/>
+</robot>

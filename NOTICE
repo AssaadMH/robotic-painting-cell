@@ -1,0 +1,3 @@
+Original work in this repository is licensed under the Apache License, Version 2.0.
+The KUKA KR 210 model in src/kuka_kr210_support comes from ROS-Industrial kuka_experimental (Apache-2.0).
+See src/kuka_kr210_support/LICENSE for the full licence text.

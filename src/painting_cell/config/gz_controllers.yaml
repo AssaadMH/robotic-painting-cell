@@ -1,0 +1,24 @@
+# ros2_control in Gazebo Harmonic (gz_ros2_control): one trajectory controller over all 8 axes
+controller_manager:
+  ros__parameters:
+    update_rate: 20             # = physics rate (step 0.05 s): the controller runs exactly once per step
+    use_sim_time: true
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    painting_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+painting_controller:
+  ros__parameters:
+    joints: [rail_joint, cross_joint, joint_a1, joint_a2, joint_a3, joint_a4, joint_a5, joint_a6]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    allow_partial_joints_goal: false
+    allow_nonzero_velocity_at_trajectory_end: true
+    constraints:
+      goal_time: 0.0
+      stopped_velocity_tolerance: 0.0
+
+gz_ros_control:                       # node name of the gz_ros2_control plugin
+  ros__parameters:
+    position_proportional_gain: 1.0   # velocity = gain * error * update rate = error / step: reaches the command in one step

@@ -1,0 +1,20 @@
+# velocity / acceleration scaling. The URDF carries the real KR 210 datasheet limits.
+default_velocity_scaling_factor: 0.5
+default_acceleration_scaling_factor: 0.3
+joint_limits:
+  rail_joint:
+    has_velocity_limits: true
+    max_velocity: 1.0
+    has_acceleration_limits: true
+    max_acceleration: 1.0
+  cross_joint:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.5
+  joint_a1: {has_velocity_limits: true, max_velocity: 2.147, has_acceleration_limits: true, max_acceleration: 3.0}
+  joint_a2: {has_velocity_limits: true, max_velocity: 2.007, has_acceleration_limits: true, max_acceleration: 3.0}
+  joint_a3: {has_velocity_limits: true, max_velocity: 1.955, has_acceleration_limits: true, max_acceleration: 3.0}
+  joint_a4: {has_velocity_limits: true, max_velocity: 3.124, has_acceleration_limits: true, max_acceleration: 5.0}
+  joint_a5: {has_velocity_limits: true, max_velocity: 3.002, has_acceleration_limits: true, max_acceleration: 5.0}
+  joint_a6: {has_velocity_limits: true, max_velocity: 3.822, has_acceleration_limits: true, max_acceleration: 5.0}

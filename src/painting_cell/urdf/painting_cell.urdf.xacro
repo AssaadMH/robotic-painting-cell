@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!-- Painting cell: rail (7th axis) + carriage + pedestal + KUKA KR 210 L150 + paint gun.
+     World frame: origin at the turntable centre on the floor, x along the rail, z up.
+     The robot base is yawed +90 deg so the arm faces +y (towards the car). -->
+<robot name="painting_cell" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:include filename="$(find kuka_kr210_support)/urdf/kr210l150_macro.xacro"/>
+
+  <xacro:arg name="rail_y" default="-2.2"/>
+  <xacro:arg name="pedestal_h" default="0.58"/>
+  <xacro:arg name="gz" default="false"/>
+  <xacro:arg name="controllers" default=""/>
+
+  <!-- solid box inertia (Gazebo needs a mass on every moving link; MoveIt ignores it) -->
+  <xacro:macro name="box_inertial" params="m x y z oz:=0">
+    <inertial><origin xyz="0 0 ${oz}"/><mass value="${m}"/>
+      <inertia ixx="${m*(y*y+z*z)/12}" iyy="${m*(x*x+z*z)/12}" izz="${m*(x*x+y*y)/12}" ixy="0" ixz="0" iyz="0"/></inertial>
+  </xacro:macro>
+  <xacro:property name="rail_y" value="$(arg rail_y)"/>
+  <xacro:property name="rail_h" value="0.06"/>
+  <xacro:property name="rail_travel" value="3.4"/>
+  <xacro:property name="carriage_h" value="0.05"/>
+  <xacro:property name="slide_h" value="0.10"/>
+  <xacro:property name="pedestal_h" value="$(arg pedestal_h)"/>
+  <xacro:property name="gun_len" value="0.40"/>
+
+  <material name="steel"><color rgba="0.35 0.38 0.42 1"/></material>
+  <material name="yellow"><color rgba="0.95 0.78 0.10 1"/></material>
+  <material name="gun"><color rgba="0.15 0.15 0.18 1"/></material>
+  <material name="nozzle"><color rgba="0.85 0.10 0.10 1"/></material>
+
+  <link name="world"/>
+
+  <!-- x-rail platform: wide enough for the cross-slide travel (extends away from the car) -->
+  <link name="rail_base">
+    <visual><origin xyz="0 -0.45 ${rail_h/2}"/><geometry><box size="8.0 1.9 ${rail_h}"/></geometry><material name="steel"/></visual>
+    <collision><origin xyz="0 -0.45 ${rail_h/2}"/><geometry><box size="8.0 1.9 ${rail_h}"/></geometry></collision>
+    <xacro:box_inertial m="1000" x="8.0" y="1.9" z="${rail_h}" oz="${rail_h/2}"/>
+  </link>
+  <joint name="world_to_rail" type="fixed">
+    <parent link="world"/><child link="rail_base"/><origin xyz="0 ${rail_y} 0"/>
+  </joint>
+
+  <link name="carriage">
+    <visual><origin xyz="0 -0.45 ${carriage_h/2}"/><geometry><box size="1.40 1.90 ${carriage_h}"/></geometry><material name="yellow"/></visual>
+    <collision><origin xyz="0 -0.45 ${carriage_h/2}"/><geometry><box size="1.40 1.90 ${carriage_h}"/></geometry></collision>
+    <xacro:box_inertial m="300" x="1.40" y="1.90" z="${carriage_h}" oz="${carriage_h/2}"/>
+  </link>
+  <joint name="rail_joint" type="prismatic">
+    <parent link="rail_base"/><child link="carriage"/>
+    <origin xyz="0 0 ${rail_h}"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-rail_travel}" upper="${rail_travel}" effort="10000" velocity="1.0"/>
+  </joint>
+
+  <!-- cross slide (8th axis): moves the robot base away from the car for the side panels -->
+  <link name="slide">
+    <visual><origin xyz="0 0 ${slide_h/2}"/><geometry><box size="1.20 1.20 ${slide_h}"/></geometry><material name="steel"/></visual>
+    <collision><origin xyz="0 0 ${slide_h/2}"/><geometry><box size="1.20 1.20 ${slide_h}"/></geometry></collision>
+    <xacro:box_inertial m="200" x="1.20" y="1.20" z="${slide_h}" oz="${slide_h/2}"/>
+  </link>
+  <joint name="cross_joint" type="prismatic">
+    <parent link="carriage"/><child link="slide"/>
+    <origin xyz="0 0 ${carriage_h}"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.90" upper="0.0" effort="10000" velocity="0.5"/>
+  </joint>
+
+  <link name="pedestal">
+    <visual><origin xyz="0 0 ${pedestal_h/2}"/><geometry><box size="0.90 0.90 ${pedestal_h}"/></geometry><material name="steel"/></visual>
+    <collision><origin xyz="0 0 ${pedestal_h/2}"/><geometry><box size="0.90 0.90 ${pedestal_h}"/></geometry></collision>
+    <xacro:box_inertial m="400" x="0.90" y="0.90" z="${pedestal_h}" oz="${pedestal_h/2}"/>
+  </link>
+  <joint name="slide_to_pedestal" type="fixed">
+    <parent link="slide"/><child link="pedestal"/><origin xyz="0 0 ${slide_h}"/>
+  </joint>
+
+  <xacro:kuka_kr210l150 prefix=""/>
+  <joint name="pedestal_to_robot" type="fixed">
+    <parent link="pedestal"/><child link="base_link"/>
+    <origin xyz="0 0 ${pedestal_h}" rpy="0 0 ${pi/2}"/>
+  </joint>
+
+  <!-- paint gun: body along tool0 z, nozzle at the end, TCP = nozzle tip -->
+  <link name="gun">
+    <visual><origin xyz="0 0 0.15"/><geometry><box size="0.08 0.08 0.30"/></geometry><material name="gun"/></visual>
+    <visual><origin xyz="0 0 0.35"/><geometry><cylinder radius="0.02" length="0.10"/></geometry><material name="nozzle"/></visual>
+    <collision><origin xyz="0 0 0.15"/><geometry><box size="0.08 0.08 0.30"/></geometry></collision>
+    <collision><origin xyz="0 0 0.35"/><geometry><cylinder radius="0.02" length="0.10"/></geometry></collision>
+    <xacro:box_inertial m="5" x="0.08" y="0.08" z="0.40" oz="0.20"/>
+  </link>
+  <joint name="tool0_to_gun" type="fixed">
+    <parent link="tool0"/><child link="gun"/><origin xyz="0 0 0"/>
+  </joint>
+  <link name="paint_tcp"/>
+  <joint name="gun_to_tcp" type="fixed">
+    <parent link="gun"/><child link="paint_tcp"/><origin xyz="0 0 ${gun_len}"/>
+  </joint>
+
+  <!-- Gazebo Harmonic: all 8 axes position-controlled through gz_ros2_control -->
+  <xacro:if value="$(arg gz)">
+    <ros2_control name="painting_cell" type="system">
+      <hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware>
+      <!-- the robot starts in the planner's READY posture -->
+      <xacro:macro name="axis" params="name q0:=0.0">
+        <joint name="${name}">
+          <command_interface name="position"/>
+          <state_interface name="position"><param name="initial_value">${q0}</param></state_interface>
+          <state_interface name="velocity"/>
+        </joint>
+      </xacro:macro>
+      <xacro:axis name="rail_joint"/><xacro:axis name="cross_joint"/>
+      <xacro:axis name="joint_a1"/><xacro:axis name="joint_a2" q0="0.35"/><xacro:axis name="joint_a3" q0="-1.10"/>
+      <xacro:axis name="joint_a4"/><xacro:axis name="joint_a5" q0="1.0"/><xacro:axis name="joint_a6"/>
+    </ros2_control>
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(arg controllers)</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:if>
+</robot>

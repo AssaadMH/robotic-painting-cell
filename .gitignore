@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+build/
+install/
+log/
+video/frames/
+video/audio/*.wav
+video/narration_full.wav
+video/concat.txt
+video/preview/
+*.mp4
+src/painting_cell/painting_cell.egg-info/
+video/cards/
+video/*.log
+video/gz_composed/
+video/test_layout.mp4
